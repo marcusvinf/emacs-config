@@ -1,0 +1,1 @@
+/home/marcus-souza/.emacs.d/init.el
