@@ -134,6 +134,12 @@ Moves the cursor to the beginning of the next line and reindents."
          (js-mode . lsp))
   :commands lsp)
 
+(use-package exec-path-from-shell
+  :if (memq window-system '(mac ns x))
+  :ensure t
+  :config
+  (exec-path-from-shell-initialize)
+  (exec-path-from-shell-copy-envs '("PATH" "GOPATH" "GOROOT")))
 
 (use-package php-mode
   :ensure t
@@ -184,13 +190,31 @@ Moves the cursor to the beginning of the next line and reindents."
         lsp-ui-sideline-enable t
         lsp-ui-sideline-show-diagnostics t
         lsp-ui-sideline-show-hover t))
+
 (use-package web-mode
+  :ensure t
   :mode ("\\.tsx\\'" "\\.jsx\\'" "\\.js\\'" "\\.ts\\'")
   :hook ((web-mode . prettier-js-mode))
   :config
-  (setq web-mode-enable-auto-quoting nil)
+  (setq web-mode-enable-auto-pairing t
+        web-mode-enable-auto-closing t
+        web-mode-enable-auto-quoting nil ; evita conflito no JSX
+        web-mode-enable-auto-opening t
+        web-mode-enable-auto-expanding t
+        web-mode-enable-auto-close-style 2 ;; <div> -> </div>
+        web-mode-enable-current-element-highlight t)
+
   (setq web-mode-content-types-alist
-        '(("jsx" . "\\.js[x]?\\'") ("tsx" . "\\.ts[x]?\\'"))))
+        '(("jsx" . "\\.js[x]?\\'") ("tsx" . "\\.ts[x]?\\'")))
+
+  (add-hook 'web-mode-hook
+            (lambda ()
+              (when (or (string-suffix-p ".tsx" buffer-file-name)
+                        (string-suffix-p ".jsx" buffer-file-name))
+                (setq-local web-mode-enable-auto-closing t)
+                (setq-local web-mode-enable-auto-close-style 2)
+                (setq-local web-mode-enable-auto-pairing t)
+                (lsp)))))
 
 (use-package prettier-js
   :hook ((js-mode . prettier-js-mode)
@@ -216,6 +240,15 @@ Moves the cursor to the beginning of the next line and reindents."
 
 ;; Global set
 (global-set-key (kbd "C-S-k") 'delete-line-and-move-to-beginning)
+
+(electric-pair-mode 1)
+(setq electric-pair-pairs
+      '((?\{ . ?\})
+        (?\( . ?\))
+        (?\[ . ?\])
+        (?\" . ?\")
+        (?\` . ?\`)
+        (?\< . ?\>)))  ;; inclui < e >
 
 (provide 'init)
 ;;; init.el ends here
