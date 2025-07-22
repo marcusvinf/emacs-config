@@ -15,8 +15,17 @@
         ("melpa-stable" . "https://stable.melpa.org/packages/")))
 
 (package-initialize)
+
+;; Garante que o conteúdo dos pacotes está atualizado
 (unless package-archive-contents
   (package-refresh-contents))
+
+;; Instala e ativa o use-package
+(unless (package-installed-p 'use-package)
+  (package-install 'use-package))
+
+(require 'use-package)
+(setq use-package-always-ensure t) ;; <-- essa linha garante instalação automática em todosp
 
 ;; Magit (Interface para Git)
 (use-package magit
@@ -31,11 +40,34 @@ Moves the cursor to the beginning of the next line and reindents."
   (delete-region (line-beginning-position) (line-beginning-position 2))
   (indent-according-to-mode))
 
+;; Cria diretório base de backup
+(defvar my/backup-root-dir "~/.emacs.d/backups/")
+(make-directory my/backup-root-dir t)
+
+(defun my/backup-file-name (file)
+  "Gera um caminho de backup baseado na estrutura original do FILE."
+  (let* ((backup-file (expand-file-name file))
+         (backup-path (concat my/backup-root-dir backup-file))
+         (backup-dir (file-name-directory backup-path)))
+    (make-directory backup-dir t)
+    (concat backup-path "~")))
+
+;; Configurações de backup
+(setq make-backup-files t
+      backup-by-copying t
+      version-control t
+      delete-old-versions t
+      kept-new-versions 6
+      kept-old-versions 2
+      backup-directory-alist `(("." . ,my/backup-root-dir)))
+
+;; Override da função de nome de backup
+(advice-add 'make-backup-file-name :override #'my/backup-file-name)
+
 ;;emacs-eaf
 
 (add-to-list 'load-path "~/.emacs.d/site-lisp/emacs-application-framework/")
 (require 'eaf)
-
 (setq-default eaf-python-command "~/.eaf-venv/bin/python3")
 
 (require 'eaf-browser)
@@ -250,5 +282,19 @@ Moves the cursor to the beginning of the next line and reindents."
         (?\` . ?\`)
         (?\< . ?\>)))  ;; inclui < e >
 
+
 (provide 'init)
 ;;; init.el ends here
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(package-selected-packages
+   '(vertico-posframe prettier-js go-mode web-mode lsp-ui typescript-mode hl-todo rainbow-delimiters highlight-numbers tree-sitter-langs tree-sitter lua-mode php-mode exec-path-from-shell lsp-mode consult marginalia orderless rg which-key projectile pos-tip org-modern org-kanban org-bullets magit flycheck dash-functional danneskjold-theme counsel company async all-the-icons ag)))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
