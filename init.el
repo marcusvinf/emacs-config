@@ -68,7 +68,6 @@ Moves the cursor to the beginning of the next line and reindents."
 
 (add-to-list 'load-path "~/.emacs.d/site-lisp/emacs-application-framework/")
 (require 'eaf)
-(setq-default eaf-python-command "~/.eaf-venv/bin/python3")
 
 (require 'eaf-browser)
 (require 'eaf-pdf-viewer)
@@ -253,6 +252,32 @@ Moves the cursor to the beginning of the next line and reindents."
          (web-mode . prettier-js-mode)
          (typescript-mode . prettier-js-mode)))
 
+(use-package org
+  :ensure t
+  :mode ("\\.org\\'" . org-mode)
+  :config
+  (setq org-hide-emphasis-markers t
+        org-startup-indented t
+        org-startup-folded 'content
+        org-hide-leading-stars nil))
+
+;; Desativa tree-sitter só no org-mode
+(add-hook 'org-mode-hook
+          (lambda ()
+            (when (bound-and-true-p tree-sitter-mode)
+              (tree-sitter-mode -1))))
+
+;; Visual moderno para org
+(use-package org-modern
+  :ensure t
+  :hook (org-mode . org-modern-mode)
+  :config
+  (setq org-modern-hide-stars nil
+        org-modern-star '("◉" "○" "✸" "✿")
+        org-modern-list '((43 . "➤") (45 . "•") (42 . "✦"))))
+
+
+(set-face-attribute 'default nil :family "Fira Code" :height 120)
 (use-package go-mode
   :ensure t
   :mode "\\.go\\'"
@@ -269,6 +294,16 @@ Moves the cursor to the beginning of the next line and reindents."
   :config
   (setq company-minimum-prefix-length 1
         company-idle-delay 0.0)) ;; sem delay para autocompletar
+
+(use-package json-mode
+  :mode "\\.json\\'")
+
+(use-package json-navigator
+  :after json-mode
+  :bind (:map json-mode-map
+              ("C-c C-n" . json-navigator-navigate-region)))
+(use-package yaml-mode
+  :mode "\\.ya?ml\\'")
 
 ;; Global set
 (global-set-key (kbd "C-S-k") 'delete-line-and-move-to-beginning)
@@ -291,7 +326,7 @@ Moves the cursor to the beginning of the next line and reindents."
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
-   '(vertico-posframe prettier-js go-mode web-mode lsp-ui typescript-mode hl-todo rainbow-delimiters highlight-numbers tree-sitter-langs tree-sitter lua-mode php-mode exec-path-from-shell lsp-mode consult marginalia orderless rg which-key projectile pos-tip org-modern org-kanban org-bullets magit flycheck dash-functional danneskjold-theme counsel company async all-the-icons ag)))
+   '(yaml-pro yaml-mode json-navigator json-mode vterm vertico-posframe prettier-js go-mode web-mode lsp-ui typescript-mode hl-todo rainbow-delimiters highlight-numbers tree-sitter-langs tree-sitter lua-mode php-mode exec-path-from-shell lsp-mode consult marginalia orderless rg which-key projectile pos-tip org-modern org-kanban org-bullets magit flycheck dash-functional danneskjold-theme counsel company async all-the-icons ag)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
