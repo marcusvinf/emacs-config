@@ -26,3 +26,4 @@
 (require 'setup-ui)
 (require 'setup-scheme)
 (require 'setup-programming)
+(require 'setup-clojure)
